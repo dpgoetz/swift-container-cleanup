@@ -54,6 +54,8 @@ usage = """%(cmd)s [options] [path 1] [path 2] ...
     -m                    Ignore any objects with last_modified < 'm' seconds ago
     -v                    verbose (will print out objects it finds)
     -f                    ssh out to call direct replication on completely out of place partitions
+    -i                    instead of feeding file through stdin you can specify
+                          it with this param if you want. it is either/or not both
 
 This finds and optionally removes container entries with no backing objects.
 The paths need to be URL-encoded.
@@ -141,7 +143,7 @@ class Auditor(object):
     def rescue_part_ssh(self, ip, device, part):
         if part in self.parts_to_rescue:
             return
-        if len(self.parts_to_rescue) > 50:
+        if len(self.parts_to_rescue) > 200:
             print("too many rescueparts running. cannot fix %s" % part)
             return
         ipd = "%s/%s" % (ip, device)
@@ -160,7 +162,7 @@ class Auditor(object):
     def rescue_part(self, part):
         if part in self.parts_to_rescue:
             return
-        if len(self.parts_to_rescue) > 50:
+        if len(self.parts_to_rescue) > 200:
             print("too many rescueparts running. cannot fix %s" % part)
             return
         self.parts_to_rescue.add(part)
@@ -462,8 +464,8 @@ if __name__ == '__main__':
     auditor.print_stats()
 
     print("waiting on %s rescueparts jobs" % len(auditor.parts_to_rescue))
-    if len(auditor.parts_to_rescue) > 50:
-        print("had to give up on rescuing some parts because there were so many (> 50)")
+    if len(auditor.parts_to_rescue) > 200:
+        print("had to give up on rescuing some parts because there were so many (> 200)")
         print("you should run this against same input to clean up the rest when it completes")
     for k,v in auditor.devices_rescuing.iteritems():
         if v > 1:
